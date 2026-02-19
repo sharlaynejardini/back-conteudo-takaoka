@@ -1,22 +1,63 @@
 # ==========================================
-# DEFINIÇÃO DOS SCHEMAS (MODELOS Pydantic)
+# SCHEMAS Pydantic
 # ==========================================
 
 from pydantic import BaseModel
 
 
-# Schema base usado para criar ou atualizar conteúdo
-class ConteudoBase(BaseModel):
-    professor: str
-    serie: str
-    disciplina: str
+# ==============================
+# SCHEMAS DE LISTAGEM
+# ==============================
+
+class ProfessorSchema(BaseModel):
+    id: str
+    nome: str
+
+    class Config:
+        orm_mode = True
+
+
+class TurmaSchema(BaseModel):
+    id: str
+    nome: str
+
+    class Config:
+        orm_mode = True
+
+
+class DisciplinaSchema(BaseModel):
+    id: str
+    nome: str
+
+    class Config:
+        orm_mode = True
+
+
+class AtribuicaoSchema(BaseModel):
+    id: str
+    professor: ProfessorSchema
+    turma: TurmaSchema
+    disciplina: DisciplinaSchema
+
+    class Config:
+        orm_mode = True
+
+
+# ==============================
+# SCHEMA PARA SALVAR CONTEÚDO
+# ==============================
+
+class ConteudoCreate(BaseModel):
+    atribuicao_id: str
     bimestre: int
     conteudo: str
 
 
-# Schema usado para retornar dados ao cliente
-class ConteudoResponse(ConteudoBase):
+class ConteudoResponse(BaseModel):
     id: str
+    atribuicao_id: str
+    bimestre: int
+    conteudo: str
 
     class Config:
-        orm_mode = True  # Permite converter objeto SQLAlchemy para JSON
+        orm_mode = True

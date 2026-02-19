@@ -1,5 +1,5 @@
 # ==========================================
-# CAMADA DE ACESSO AO BANCO (CRUD)
+# CAMADA DE ACESSO AO BANCO
 # ==========================================
 
 from sqlalchemy.orm import Session
@@ -7,47 +7,41 @@ import models
 
 
 # ==========================================
-# FUNÇÃO PARA BUSCAR CONTEÚDO
+# LISTAGENS
 # ==========================================
-def buscar_conteudo(db: Session, professor: str, serie: str, disciplina: str, bimestre: int):
-    """
-    Busca um conteúdo específico com base em:
-    professor + série + disciplina + bimestre
-    """
+
+def listar_professores(db: Session):
+    return db.query(models.Professor).order_by(models.Professor.nome).all()
+
+
+def listar_turmas(db: Session):
+    return db.query(models.Turma).order_by(models.Turma.nome).all()
+
+
+def listar_atribuicoes_por_professor(db: Session, professor_id: str):
+    return db.query(models.Atribuicao).filter_by(professor_id=professor_id).all()
+
+
+# ==========================================
+# CONTEÚDO
+# ==========================================
+
+def buscar_conteudo(db: Session, atribuicao_id: str, bimestre: int):
     return db.query(models.Conteudo).filter_by(
-        professor=professor,
-        serie=serie,
-        disciplina=disciplina,
+        atribuicao_id=atribuicao_id,
         bimestre=bimestre
     ).first()
 
 
-# ==========================================
-# FUNÇÃO PARA CRIAR OU ATUALIZAR CONTEÚDO
-# ==========================================
-def criar_ou_atualizar(db: Session, dados):
-    """
-    Se o conteúdo já existir, atualiza.
-    Se não existir, cria um novo registro.
-    """
+def criar_ou_atualizar_conteudo(db: Session, dados):
+    existente = buscar_conteudo(db, dados.atribuicao_id, dados.bimestre)
 
-    # Primeiro verifica se já existe registro
-    conteudo_existente = buscar_conteudo(
-        db,
-        dados.professor,
-        dados.serie,
-        dados.disciplina,
-        dados.bimestre
-    )
-
-    # Se existir → atualiza
-    if conteudo_existente:
-        conteudo_existente.conteudo = dados.conteudo
+    if existente:
+        existente.conteudo = dados.conteudo
         db.commit()
-        db.refresh(conteudo_existente)
-        return conteudo_existente
+        db.refresh(existente)
+        return existente
 
-    # Se não existir → cria novo
     novo = models.Conteudo(**dados.dict())
     db.add(novo)
     db.commit()

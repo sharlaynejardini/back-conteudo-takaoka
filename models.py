@@ -1,47 +1,79 @@
 # ==========================================
-# DEFINIÇÃO DO MODELO DA TABELA
+# DEFINIÇÃO DOS MODELOS RELACIONAIS
 # ==========================================
 
-# Importações necessárias
-from sqlalchemy import Column, String, Integer, Text, DateTime
+from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
 
-# Importa a Base criada no database.py
 from database import Base
 
 
-# Classe que representa a tabela "conteudos" no banco
-class Conteudo(Base):
-    __tablename__ = "conteudos"  # Nome da tabela no banco
+# ==========================================
+# TABELA PROFESSORES
+# ==========================================
+class Professor(Base):
+    __tablename__ = "professores"
 
-    # ==========================================
-    # COLUNAS DA TABELA
-    # ==========================================
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    nome = Column(String, nullable=False, unique=True)
 
-    # ID único gerado automaticamente (UUID)
+
+# ==========================================
+# TABELA TURMAS
+# ==========================================
+class Turma(Base):
+    __tablename__ = "turmas"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    nome = Column(String, nullable=False, unique=True)
+
+
+# ==========================================
+# TABELA DISCIPLINAS
+# ==========================================
+class Disciplina(Base):
+    __tablename__ = "disciplinas"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    nome = Column(String, nullable=False, unique=True)
+
+
+# ==========================================
+# TABELA ATRIBUIÇÕES
+# Define qual professor leciona qual disciplina em qual turma
+# ==========================================
+class Atribuicao(Base):
+    __tablename__ = "atribuicoes"
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
-    # Nome do professor
-    professor = Column(String, nullable=False)
+    professor_id = Column(UUID(as_uuid=True), ForeignKey("professores.id"))
+    turma_id = Column(UUID(as_uuid=True), ForeignKey("turmas.id"))
+    disciplina_id = Column(UUID(as_uuid=True), ForeignKey("disciplinas.id"))
 
-    # Série ou turma (ex: 2ºA)
-    serie = Column(String, nullable=False)
+    professor = relationship("Professor")
+    turma = relationship("Turma")
+    disciplina = relationship("Disciplina")
 
-    # Disciplina (ex: Português)
-    disciplina = Column(String, nullable=False)
 
-    # Bimestre (1, 2, 3 ou 4)
+# ==========================================
+# TABELA CONTEÚDOS
+# ==========================================
+class Conteudo(Base):
+    __tablename__ = "conteudos"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    atribuicao_id = Column(UUID(as_uuid=True), ForeignKey("atribuicoes.id"))
     bimestre = Column(Integer, nullable=False)
-
-    # Texto do conteúdo essencial
     conteudo = Column(Text, nullable=False)
 
-    # Data de criação automática
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-    # Data de última atualização automática
     updated_at = Column(DateTime(timezone=True),
                         server_default=func.now(),
                         onupdate=func.now())
+
+    atribuicao = relationship("Atribuicao")

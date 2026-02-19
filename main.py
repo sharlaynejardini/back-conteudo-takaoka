@@ -5,26 +5,17 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-# Importações internas
 from database import SessionLocal
 import schemas
 import crud
 
-# ==========================================
-# CRIAÇÃO DA APLICAÇÃO
-# ==========================================
-
-app = FastAPI(title="Sistema de Conteúdos Essenciais")
+app = FastAPI(title="Sistema de Conteúdos Essenciais - Relacional")
 
 
 # ==========================================
-# DEPENDÊNCIA PARA GERENCIAR SESSÃO DO BANCO
+# DEPENDÊNCIA DE SESSÃO
 # ==========================================
 def get_db():
-    """
-    Cria uma sessão de banco para cada requisição.
-    Fecha automaticamente ao final.
-    """
     db = SessionLocal()
     try:
         yield db
@@ -33,27 +24,31 @@ def get_db():
 
 
 # ==========================================
-# ENDPOINT PARA BUSCAR CONTEÚDO
+# ENDPOINTS DE LISTAGEM
 # ==========================================
-@app.get("/conteudo")
-def buscar_conteudo(
-    professor: str,
-    serie: str,
-    disciplina: str,
-    bimestre: int,
-    db: Session = Depends(get_db)
-):
-    """
-    Busca conteúdo existente com base nos filtros informados.
-    """
 
-    conteudo = crud.buscar_conteudo(
-        db,
-        professor,
-        serie,
-        disciplina,
-        bimestre
-    )
+@app.get("/professores", response_model=list[schemas.ProfessorSchema])
+def get_professores(db: Session = Depends(get_db)):
+    return crud.listar_professores(db)
+
+
+@app.get("/turmas", response_model=list[schemas.TurmaSchema])
+def get_turmas(db: Session = Depends(get_db)):
+    return crud.listar_turmas(db)
+
+
+@app.get("/atribuicoes/{professor_id}", response_model=list[schemas.AtribuicaoSchema])
+def get_atribuicoes(professor_id: str, db: Session = Depends(get_db)):
+    return crud.listar_atribuicoes_por_professor(db, professor_id)
+
+
+# ==========================================
+# ENDPOINTS DE CONTEÚDO
+# ==========================================
+
+@app.get("/conteudo")
+def buscar_conteudo(atribuicao_id: str, bimestre: int, db: Session = Depends(get_db)):
+    conteudo = crud.buscar_conteudo(db, atribuicao_id, bimestre)
 
     if not conteudo:
         raise HTTPException(status_code=404, detail="Conteúdo não encontrado")
@@ -61,16 +56,6 @@ def buscar_conteudo(
     return conteudo
 
 
-# ==========================================
-# ENDPOINT PARA CRIAR OU ATUALIZAR CONTEÚDO
-# ==========================================
-@app.post("/conteudo")
-def salvar_conteudo(
-    dados: schemas.ConteudoBase,
-    db: Session = Depends(get_db)
-):
-    """
-    Cria novo conteúdo ou atualiza se já existir.
-    """
-
-    return crud.criar_ou_atualizar(db, dados)
+@app.post("/conteudo", response_model=schemas.ConteudoResponse)
+def salvar_conteudo(dados: schemas.ConteudoCreate, db: Session = Depends(get_db)):
+    return crud.criar_ou_atualizar_conteudo(db, dados)
