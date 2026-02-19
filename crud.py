@@ -47,3 +47,24 @@ def criar_ou_atualizar_conteudo(db: Session, dados):
     db.commit()
     db.refresh(novo)
     return novo
+def salvar_conteudo(db, dados):
+    conteudo = db.query(models.Conteudo).filter(
+        models.Conteudo.atribuicao_id == dados.atribuicao_id,
+        models.Conteudo.bimestre == dados.bimestre
+    ).first()
+
+    if conteudo:
+        conteudo.conteudo = dados.conteudo
+        conteudo.data_avaliacao = dados.data_avaliacao
+    else:
+        conteudo = models.Conteudo(
+            atribuicao_id=dados.atribuicao_id,
+            bimestre=dados.bimestre,
+            conteudo=dados.conteudo,
+            data_avaliacao=dados.data_avaliacao
+        )
+        db.add(conteudo)
+
+    db.commit()
+    db.refresh(conteudo)
+    return conteudo

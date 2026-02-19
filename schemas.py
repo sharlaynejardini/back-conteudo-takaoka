@@ -1,63 +1,78 @@
 # ==========================================
-# SCHEMAS Pydantic
+# SCHEMAS PYDANTIC
 # ==========================================
 
 from pydantic import BaseModel
+from uuid import UUID
+from datetime import date
 
 
-# ==============================
-# SCHEMAS DE LISTAGEM
-# ==============================
+# ==========================================
+# PROFESSOR
+# ==========================================
 
-class ProfessorSchema(BaseModel):
-    id: str
+class ProfessorResponse(BaseModel):
+    id: UUID
     nome: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
-class TurmaSchema(BaseModel):
-    id: str
+# ==========================================
+# TURMA
+# ==========================================
+
+class TurmaResponse(BaseModel):
+    id: UUID
     nome: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
-class DisciplinaSchema(BaseModel):
-    id: str
+# ==========================================
+# DISCIPLINA
+# ==========================================
+
+class DisciplinaResponse(BaseModel):
+    id: UUID
     nome: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
-class AtribuicaoSchema(BaseModel):
-    id: str
-    professor: ProfessorSchema
-    turma: TurmaSchema
-    disciplina: DisciplinaSchema
+# ==========================================
+# ATRIBUIÇÃO
+# ==========================================
+
+class AtribuicaoResponse(BaseModel):
+    id: UUID
+    turma: TurmaResponse
+    disciplina: DisciplinaResponse
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
-# ==============================
-# SCHEMA PARA SALVAR CONTEÚDO
-# ==============================
+# ==========================================
+# CONTEÚDO
+# ==========================================
 
 class ConteudoCreate(BaseModel):
-    atribuicao_id: str
+    atribuicao_id: UUID
     bimestre: int
     conteudo: str
+    data_avaliacao: date   # 🔥 AGORA OBRIGATÓRIA
 
 
 class ConteudoResponse(BaseModel):
-    id: str
-    atribuicao_id: str
+    id: UUID
+    atribuicao_id: UUID
     bimestre: int
     conteudo: str
+    data_avaliacao: date
 
     class Config:
-        orm_mode = True
+        from_attributes = True
