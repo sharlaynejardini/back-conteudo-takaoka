@@ -1,3 +1,7 @@
+# ==========================================
+# MODELOS SQLALCHEMY
+# ==========================================
+
 from sqlalchemy import Column, String, Integer, ForeignKey, Date, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -56,6 +60,8 @@ class Conteudo(Base):
     atribuicao_id = Column(UUID(as_uuid=True), ForeignKey("atribuicoes.id"))
     bimestre = Column(Integer, nullable=False)
     conteudo = Column(Text, nullable=False)
+
+    # 🔥 OBRIGATÓRIA
     data_avaliacao = Column(Date, nullable=False)
 
     atribuicao = relationship("Atribuicao", back_populates="conteudos")

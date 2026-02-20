@@ -1,5 +1,5 @@
 # ==========================================
-# SCHEMAS PYDANTIC
+# SCHEMAS.PY
 # ==========================================
 
 from pydantic import BaseModel
@@ -7,9 +7,9 @@ from uuid import UUID
 from datetime import date
 
 
-# ==========================================
+# =========================
 # PROFESSOR
-# ==========================================
+# =========================
 
 class ProfessorResponse(BaseModel):
     id: UUID
@@ -19,21 +19,9 @@ class ProfessorResponse(BaseModel):
         from_attributes = True
 
 
-# ==========================================
-# TURMA
-# ==========================================
-
-class TurmaResponse(BaseModel):
-    id: UUID
-    nome: str
-
-    class Config:
-        from_attributes = True
-
-
-# ==========================================
+# =========================
 # DISCIPLINA
-# ==========================================
+# =========================
 
 class DisciplinaResponse(BaseModel):
     id: UUID
@@ -43,36 +31,53 @@ class DisciplinaResponse(BaseModel):
         from_attributes = True
 
 
-# ==========================================
-# ATRIBUIÇÃO
-# ==========================================
+# =========================
+# TURMA
+# =========================
 
-class AtribuicaoResponse(BaseModel):
+class TurmaResponse(BaseModel):
     id: UUID
-    turma: TurmaResponse
-    disciplina: DisciplinaResponse
+    nome: str
 
     class Config:
         from_attributes = True
 
 
-# ==========================================
-# CONTEÚDO
-# ==========================================
+# =========================
+# ATRIBUIÇÃO
+# =========================
+
+class AtribuicaoResponse(BaseModel):
+    id: UUID
+    professor: ProfessorResponse
+    disciplina: DisciplinaResponse
+    turma: TurmaResponse
+
+    class Config:
+        from_attributes = True
+
+
+# =========================
+# CONTEÚDO CREATE
+# =========================
 
 class ConteudoCreate(BaseModel):
     atribuicao_id: UUID
     bimestre: int
     conteudo: str
-    data_avaliacao: date   # 🔥 AGORA OBRIGATÓRIA
+    data_avaliacao: date
 
+
+# =========================
+# CONTEÚDO RESPONSE
+# =========================
 
 class ConteudoResponse(BaseModel):
     id: UUID
-    atribuicao_id: UUID
     bimestre: int
     conteudo: str
     data_avaliacao: date
+    atribuicao: AtribuicaoResponse
 
     class Config:
         from_attributes = True

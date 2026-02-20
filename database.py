@@ -1,26 +1,26 @@
 # ==========================================
-# CONFIGURAÇÃO DE CONEXÃO COM O BANCO
+# CONFIGURAÇÃO DO BANCO DE DADOS
 # ==========================================
 
-# Importações necessárias do SQLAlchemy
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-
-# Importações para carregar variáveis de ambiente
-import os
 from dotenv import load_dotenv
 
-# Carrega as variáveis do arquivo .env
+# Carrega variáveis do .env
 load_dotenv()
 
-# Recupera a URL do banco de dados definida no .env
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Cria o mecanismo de conexão com o PostgreSQL (Supabase)
+# Criação do engine
 engine = create_engine(DATABASE_URL)
 
-# Cria a fábrica de sessões (cada requisição terá sua própria sessão)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Criação da sessão
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
 
-# Base usada para criar os modelos (tabelas)
+# Base para os modelos
 Base = declarative_base()

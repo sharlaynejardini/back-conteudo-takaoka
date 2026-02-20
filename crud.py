@@ -1,57 +1,49 @@
 # ==========================================
-# CAMADA DE ACESSO AO BANCO
+# CRUD.PY
 # ==========================================
 
-from sqlalchemy.orm import Session
 import models
+from sqlalchemy.orm import joinedload
 
 
-# ==========================================
-# LISTAGENS
-# ==========================================
-
-def listar_professores(db: Session):
-    return db.query(models.Professor).order_by(models.Professor.nome).all()
+def listar_professores(db):
+    return db.query(models.Professor).all()
 
 
-def listar_turmas(db: Session):
-    return db.query(models.Turma).order_by(models.Turma.nome).all()
+def listar_atribuicoes_por_professor(db, professor_id):
+    return (
+        db.query(models.Atribuicao)
+        .options(
+            joinedload(models.Atribuicao.professor),
+            joinedload(models.Atribuicao.disciplina),
+            joinedload(models.Atribuicao.turma)
+        )
+        .filter(models.Atribuicao.professor_id == professor_id)
+        .all()
+    )
 
 
-def listar_atribuicoes_por_professor(db: Session, professor_id: str):
-    return db.query(models.Atribuicao).filter_by(professor_id=professor_id).all()
+def buscar_conteudo(db, atribuicao_id, bimestre):
+    return (
+        db.query(models.Conteudo)
+        .options(
+            joinedload(models.Conteudo.atribuicao)
+            .joinedload(models.Atribuicao.professor),
+            joinedload(models.Conteudo.atribuicao)
+            .joinedload(models.Atribuicao.disciplina),
+            joinedload(models.Conteudo.atribuicao)
+            .joinedload(models.Atribuicao.turma),
+        )
+        .filter(
+            models.Conteudo.atribuicao_id == atribuicao_id,
+            models.Conteudo.bimestre == bimestre
+        )
+        .first()
+    )
 
 
-# ==========================================
-# CONTEÚDO
-# ==========================================
-
-def buscar_conteudo(db: Session, atribuicao_id: str, bimestre: int):
-    return db.query(models.Conteudo).filter_by(
-        atribuicao_id=atribuicao_id,
-        bimestre=bimestre
-    ).first()
-
-
-def criar_ou_atualizar_conteudo(db: Session, dados):
-    existente = buscar_conteudo(db, dados.atribuicao_id, dados.bimestre)
-
-    if existente:
-        existente.conteudo = dados.conteudo
-        db.commit()
-        db.refresh(existente)
-        return existente
-
-    novo = models.Conteudo(**dados.dict())
-    db.add(novo)
-    db.commit()
-    db.refresh(novo)
-    return novo
 def salvar_conteudo(db, dados):
-    conteudo = db.query(models.Conteudo).filter(
-        models.Conteudo.atribuicao_id == dados.atribuicao_id,
-        models.Conteudo.bimestre == dados.bimestre
-    ).first()
+    conteudo = buscar_conteudo(db, dados.atribuicao_id, dados.bimestre)
 
     if conteudo:
         conteudo.conteudo = dados.conteudo
@@ -67,4 +59,29 @@ def salvar_conteudo(db, dados):
 
     db.commit()
     db.refresh(conteudo)
-    return conteudo
+
+    return buscar_conteudo(db, dados.atribuicao_id, dados.bimestre)
+
+
+def buscar_calendario_por_turma(db, turma_id):
+    return (
+        db.query(models.Conteudo)
+        .options(
+            joinedload(models.Conteudo.atribuicao)
+            .joinedload(models.Atribuicao.professor),
+            joinedload(models.Conteudo.atribuicao)
+            .joinedload(models.Atribuicao.disciplina),
+            joinedload(models.Conteudo.atribuicao)
+            .joinedload(models.Atribuicao.turma),
+        )
+        .join(models.Atribuicao)
+        .filter(models.Atribuicao.turma_id == turma_id)
+        .all()
+    )
+
+# =========================
+# LISTAR TODAS AS TURMAS
+# =========================
+
+def listar_turmas(db):
+    return db.query(models.Turma).all()
